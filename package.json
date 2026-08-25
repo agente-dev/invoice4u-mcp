@@ -1,0 +1,42 @@
+{
+  "name": "@agente-dev/invoice4u-mcp",
+  "version": "0.1.0-rc.0",
+  "description": "Unofficial Invoice4U MCP server: typed, safe access to Invoice4U accounting data for MCP-compatible agents over stdio.",
+  "license": "MIT",
+  "author": "Agente Dev LTD",
+  "type": "module",
+  "bin": {
+    "invoice4u-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agente-dev/invoice4u-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/agente-dev/invoice4u-mcp/issues"
+  },
+  "homepage": "https://github.com/agente-dev/invoice4u-mcp#readme",
+  "scripts": {
+    "build": "tsup",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "biome check .",
+    "prepare-once": "npm install && npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.10",
+    "@types/node": "^24.0.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  }
+}
