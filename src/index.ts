@@ -3,7 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import type { ConfigError } from "./config.js";
 import { loadConfig } from "./config.js";
 import { Invoice4uClient } from "./invoice4u/client.js";
-import { registerReadTools } from "./server.js";
+import { registerReadTools, registerWriteTools } from "./server.js";
 
 export const VERSION = "0.1.0-rc.0";
 
@@ -36,6 +36,9 @@ async function main(): Promise<void> {
   });
 
   registerReadTools(server, { client, config });
+  // Write surface (Train D): gated by config.allowWrites — registers nothing
+  // (allowing the server to stay read-only) unless explicitly enabled.
+  registerWriteTools(server, { client, config });
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

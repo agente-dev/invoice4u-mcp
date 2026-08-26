@@ -15,6 +15,12 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import {
+  CREATE_LINKED_RECEIPT_DESCRIPTION,
+  CREATE_LINKED_RECEIPT_TOOL_NAME,
+  createCreateLinkedReceiptTool,
+  createLinkedReceiptInputSchemaRegistered,
+} from "./tools/createLinkedReceipt.js";
+import {
   createGetCustomerTool,
   GET_CUSTOMER_DESCRIPTION,
   GET_CUSTOMER_TOOL_NAME,
@@ -61,6 +67,14 @@ import {
 /** The one annotation set every read tool is registered with. */
 export const READ_TOOL_ANNOTATIONS = {
   readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: true,
+} as const;
+
+/** The annotation set the write tool is registered with (readOnlyHint: false). */
+export const WRITE_TOOL_ANNOTATIONS = {
+  readOnlyHint: false,
   destructiveHint: false,
   idempotentHint: true,
   openWorldHint: true,
@@ -147,5 +161,31 @@ export function registerReadTools(server: McpServer, deps: ToolDeps): string[] {
     );
     names.push(registration.name);
   }
+  return names;
+}
+
+/**
+ * Register the write surface (Train D). Gated by `config.allowWrites`: when
+ * disabled (the default) nothing is registered. When enabled, exactly the one
+ * write tool of AGC-781 — `invoice4u_create_linked_receipt` — is registered
+ * with the write annotation set (readOnlyHint: false) and idempotency via its
+ * mandatory apiIdentifier. Returns the registered tool names.
+ */
+export function registerWriteTools(server: McpServer, deps: ToolDeps): string[] {
+  if (!deps.config.allowWrites) return [];
+  const names: string[] = [];
+  server.registerTool(
+    CREATE_LINKED_RECEIPT_TOOL_NAME,
+    {
+      description: CREATE_LINKED_RECEIPT_DESCRIPTION,
+      inputSchema: createLinkedReceiptInputSchemaRegistered as never,
+      annotations: WRITE_TOOL_ANNOTATIONS,
+    },
+    ((args: unknown) =>
+      createCreateLinkedReceiptTool(deps).handler(args as never)) as unknown as Parameters<
+      typeof server.registerTool
+    >[2],
+  );
+  names.push(CREATE_LINKED_RECEIPT_TOOL_NAME);
   return names;
 }

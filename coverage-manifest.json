@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-26",
+  "repo": "agente-dev/invoice4u-mcp",
+  "tools": [
+    {
+      "name": "invoice4u_verify_connection",
+      "wrappedOperations": ["IsAuthenticated", "GetBranches"],
+      "risk": "read",
+      "qaVerification": {
+        "state": "blocked_pending_credentials",
+        "note": "Requires a live Invoice4U API token (INVOICE4U_API_TOKEN) to exercise against the QA sandbox."
+      },
+      "tests": ["tests/contract/tools.test.ts"]
+    },
+    {
+      "name": "invoice4u_list_branches",
+      "wrappedOperations": ["GetBranches"],
+      "risk": "read",
+      "qaVerification": {
+        "state": "blocked_pending_credentials",
+        "note": "Requires a live Invoice4U API token to verify against the QA sandbox."
+      },
+      "tests": ["tests/contract/tools.test.ts"]
+    },
+    {
+      "name": "invoice4u_search_documents",
+      "wrappedOperations": ["GetDocuments"],
+      "risk": "read",
+      "qaVerification": {
+        "state": "blocked_pending_credentials",
+        "note": "Requires a live Invoice4U API token and seeded documents to verify search filters end-to-end."
+      },
+      "tests": ["tests/contract/tools.test.ts"]
+    },
+    {
+      "name": "invoice4u_get_document",
+      "wrappedOperations": ["GetDocument", "GetDocumentByNumber", "GetDocumentByApiIdentifier"],
+      "risk": "read",
+      "qaVerification": {
+        "state": "blocked_pending_credentials",
+        "note": "Requires a live Invoice4U API token and a real document GUID/number/idempotency key to verify."
+      },
+      "tests": ["tests/contract/tools.test.ts"]
+    },
+    {
+      "name": "invoice4u_search_customers",
+      "wrappedOperations": ["GetCustomers", "GetCustomersByOrgId"],
+      "risk": "read",
+      "qaVerification": {
+        "state": "blocked_pending_credentials",
+        "note": "Requires a live Invoice4U API token and seeded customers to verify filters end-to-end."
+      },
+      "tests": ["tests/contract/tools.test.ts"]
+    },
+    {
+      "name": "invoice4u_get_customer",
+      "wrappedOperations": ["GetFullCustomer"],
+      "risk": "read",
+      "qaVerification": {
+        "state": "blocked_pending_credentials",
+        "note": "Requires a live Invoice4U API token and a real customer ID to verify normalization."
+      },
+      "tests": ["tests/contract/tools.test.ts"]
+    },
+    {
+      "name": "invoice4u_validate_linked_receipt",
+      "wrappedOperations": ["GetDocument"],
+      "risk": "read",
+      "qaVerification": {
+        "state": "blocked_pending_credentials",
+        "note": "Requires a live Invoice4U API token and open invoices with known balances to verify open-balance logic."
+      },
+      "tests": ["tests/contract/tools.test.ts"]
+    },
+    {
+      "name": "invoice4u_create_linked_receipt",
+      "wrappedOperations": [
+        "GetDocument",
+        "GetDocumentByApiIdentifier",
+        "CreateDocumentWithIdentifierValidation"
+      ],
+      "risk": "write",
+      "qaVerification": {
+        "state": "blocked_pending_credentials",
+        "note": "Destructive-ish write: verify against the QA sandbox with a real token and a throwaway apiIdentifier; confirms idempotent-create behavior (134) and balance post-state."
+      },
+      "tests": ["tests/contract/createLinkedReceipt.test.ts"]
+    }
+  ],
+  "excludedApiCategories": [
+    {
+      "category": "raw request tool",
+      "reason": "A generic passthrough that POSTs arbitrary ops undermines the typed, allowlisted surface and the preflight safety checks; deliberately not exposed."
+    },
+    {
+      "category": "bank transactions",
+      "reason": "Returns sensitive banking data; out of scope for the initial credential-scoped surface."
+    },
+    {
+      "category": "CSV parsing",
+      "reason": "Bulk CSV ingestion is batch-oriented and not exposed through the MCP tool surface."
+    },
+    {
+      "category": "matching",
+      "reason": "Matching/pairing operations can move funds automatically and are excluded until explicit review."
+    },
+    {
+      "category": "cancellation",
+      "reason": "Cancelling existing documents is a destructive, high-impact write; excluded from the write surface."
+    },
+    {
+      "category": "credit-card charging",
+      "reason": "Charging stored cards causes real payment movement and requires financial-compliance review."
+    },
+    {
+      "category": "standing orders",
+      "reason": "Recurring payment configuration changes billing behavior over time and is excluded."
+    },
+    {
+      "category": "stored cards",
+      "reason": "Writing or reading stored card data is sensitive and out of scope."
+    },
+    {
+      "category": "customer deletion",
+      "reason": "Permanent customer deletion is destructive and excluded."
+    },
+    {
+      "category": "unrestricted document creation",
+      "reason": "Only the linked-receipt write is exposed; arbitrary document creation is gated behind the same write flag but not implemented."
+    },
+    {
+      "category": "hosted service",
+      "reason": "Managing the hosted billing service itself is an admin concern, not an accounting data read/write path."
+    },
+    {
+      "category": "private packages",
+      "reason": "Private SDK/package management is outside the accounting-data tool surface."
+    },
+    {
+      "category": "desktop integration",
+      "reason": "Desktop/mobile app integration endpoints are unrelated to the MCP accounting surface."
+    }
+  ]
+}
