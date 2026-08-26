@@ -1,0 +1,73 @@
+# QA integration smoke test.
+# Guard job: if the QA token secret is NOT configured, skip the integration
+# job with an explanatory notice (never fail). If present, run the gated
+# tests/integration/qa.spec.ts runner against the real QA base URL
+# (apiqa.invoice4u.co.il) with INVOICE4U_ENV=qa.
+#
+# The full 12-step AGC-781 acceptance (see docs/qa-testing.md) additionally
+# requires writes enabled (INVOICE4U_ALLOW_WRITES=true) in a throwaway scope
+# and stays MANUAL until real credentials exist.
+
+name: qa-integration
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly: every Monday 07:30 UTC.
+    - cron: "30 7 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  INVOICE4U_ENV: qa
+
+jobs:
+  guard:
+    name: Guard — QA token configured?
+    runs-on: ubuntu-latest
+    outputs:
+      has-token: ${{ steps.check.outputs.has-token }}
+    steps:
+      - name: Check for INVOICE4U_API_TOKEN secret
+        id: check
+        env:
+          TOKEN_VAL: ${{ secrets.INVOICE4U_API_TOKEN }}
+        run: |
+          if [ -n "${TOKEN_VAL}" ]; then
+            echo "has-token=true"
+            echo "has-token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::INVOICE4U_API_TOKEN secret is not configured. Skipping live QA integration (no Invoice4U credentials available). Read/write acceptance remains blocked and manual until credentials exist. See docs/qa-testing.md."
+            echo "has-token=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  qa:
+    name: Live QA smoke (verify_connection + list_branches)
+    runs-on: ubuntu-latest
+    needs: guard
+    if: needs.guard.outputs.has-token == 'true'
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run gated QA integration (vitest)
+        env:
+          INVOICE4U_API_TOKEN: ${{ secrets.INVOICE4U_API_TOKEN }}
+          INVOICE4U_ENV: qa
+        # The token is set, so tests/integration/qa.spec.ts is NOT skipped and
+        # exercises verify_connection + list_branches against the real QA URL.
+        run: npm test

@@ -1,0 +1,22 @@
+{
+  "mcpName": "io.github.agente-dev/invoice4u",
+  "name": "invoice4u-mcp",
+  "version": "0.1.0-rc.0",
+  "description": "Unofficial Invoice4U MCP server: typed, safe access to Invoice4U accounting data for MCP-compatible agents over stdio.",
+  "transport": "stdio",
+  "command": "npx",
+  "args": ["-y", "@agente-dev/invoice4u-mcp"],
+  "env": {
+    "INVOICE4U_API_TOKEN": "$INVOICE4U_API_TOKEN",
+    "INVOICE4U_ENV": "qa",
+    "INVOICE4U_ALLOW_WRITES": "false"
+  },
+  "binaries": {
+    "invoice4u-mcp": "./dist/index.js"
+  },
+  "languages": ["typescript"],
+  "categories": ["accounting", "invoicing"],
+  "sourceUrl": "https://github.com/agente-dev/invoice4u-mcp",
+  "website": "https://github.com/agente-dev/invoice4u-mcp#readme",
+  "license": "MIT"
+}

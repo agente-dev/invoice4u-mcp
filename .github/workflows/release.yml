@@ -1,0 +1,99 @@
+# npm release pipeline.
+#
+# Inert until a maintainer links @agente-dev/invoice4u-mcp for trusted
+# publishing on npmjs.com — see AGC-781.
+#
+# Triggered on tag push v*. Runs the full gate (lint/check/test/build) and an
+# `npm pack --dry-run` verification, then publishes via npm trusted publishing
+# (OIDC). The GitHub Account (environment: npm) must be approved before the
+# publish job runs; `--provenance` is used only when that environment
+# protection approves execution.
+#
+# BEFORE THIS WILL WORK a maintainer must:
+#   - create the GitHub Environment "npm" with an npmjs.com trusted-publishing
+#     connection for the @agente-dev/invoice4u-mcp package, and
+#   - add a tag-push deployment protection rule (or manually approve).
+
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  # Required for npm provenance/trusted publishing (OIDC token minting).
+  id-token: write
+
+env:
+  NODE_VERSION: 24
+
+jobs:
+  gate:
+    name: Gate (lint · check · test · build · pack)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: npm/actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run check
+
+      - name: Unit + contract tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify npm tarball contents (dry-run)
+        run: |
+          npm pack --dry-run > /tmp/pack-out.txt 2>&1
+          cat /tmp/pack-out.txt
+          grep -q "dist/index.js" /tmp/pack-out.txt || { echo "::error::dist/index.js missing from tarball"; exit 1; }
+          grep -q "README.md" /tmp/pack-out.txt || { echo "::error::README.md missing from tarball"; exit 1; }
+          grep -q "LICENSE" /tmp/pack-out.txt || { echo "::error::LICENSE missing from tarball"; exit 1; }
+
+  publish:
+    name: Publish to npm (trusted publishing)
+    runs-on: ubuntu-latest
+    needs: gate
+    # Publishing runs only when the "npm" environment protection is approved.
+    environment: npm
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js with npm registry
+        uses: npm/actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish with provenance
+        run: npm publish --provenance --access public
+        # No NODE_AUTH_TOKEN: npm trusted publishing exchanges the GitHub
+        # Actions OIDC token (permissions.id-token: write above) for package
+        # auth automatically. No long-lived npm token exists anywhere — per
+        # AGC-781. Requires npm >= 11 (ships with Node 24) and the maintainer
+        # trusted-publishing link on npmjs.com (see header).

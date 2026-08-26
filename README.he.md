@@ -71,7 +71,10 @@
 
 ## סטטוס
 
-שלב שלד — היישום מנוהל בלוח הפנימי של Agente. `server.json`, `coverage-manifest.json`, `docs/`, `CONTRIBUTING.md`, `SECURITY.md` ו-`CHANGELOG.md` יגיעו עם ספאלד היישום.
+**מיושם — משטח v0.1.** שמונה כלים (7 קריאה + 1 כתיבה מאופשר) מיושמים ונרשמים כמתואר בטבלת הכלים לעיל. הכיסוי מנוהל ב-[`coverage-manifest.json`](./coverage-manifest.json), עם פירוט ב-[`docs/`](./docs/).
+
+- **סטטוס QA:** כלי הקריאה אומתו מול הפניה ל-API של Invoice4U ובנוסף בבדיקות חוזה (120 בדיקות יחידה וחוזה עוברות). **אינטגרציית QA חיה חסומה בהמתנה לאישורים** — אין ארגז-חול ציבורי של Invoice4U, והפעלה מול `apiqa.invoice4u.co.il` דורשת חשבון ארגון QA אמיתי + מפתח API. בדיקת העשן המותנית (`tests/integration/qa.spec.ts`) מדולגת ללא טוקן; ראו [`docs/qa-testing.md`](./docs/qa-testing.md).
+- **פרסום npm בהמתנה:** הפרסום ממתין לקישור פרסום מהימן עבור `@agente-dev/invoice4u-mcp` ב-npmjs.com.
 
 ## רישיון
 
