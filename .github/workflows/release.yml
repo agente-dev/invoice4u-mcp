@@ -92,6 +92,8 @@ jobs:
 
       - name: Publish with provenance
         run: npm publish --provenance --access public
-        env:
-          # OIDC token — trusted publishing, no NPM_TOKEN stored.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # No NODE_AUTH_TOKEN: npm trusted publishing exchanges the GitHub
+        # Actions OIDC token (permissions.id-token: write above) for package
+        # auth automatically. No long-lived npm token exists anywhere — per
+        # AGC-781. Requires npm >= 11 (ships with Node 24) and the maintainer
+        # trusted-publishing link on npmjs.com (see header).
