@@ -71,7 +71,10 @@ See [.env.example](./.env.example). Only reviewed official Invoice4U hosts are c
 
 ## Status
 
-Skeleton phase — implementation is tracked in Agente's internal board. `server.json`, `coverage-manifest.json`, `docs/`, `CONTRIBUTING.md`, `SECURITY.md`, and `CHANGELOG.md` land with the implementation scaffold.
+**Implemented — v0.1 surface.** Eight tools (7 read + 1 gated write) are implemented and registered as described in the Tools table above. Coverage is tracked in [`coverage-manifest.json`](./coverage-manifest.json), with details in [`docs/`](./docs/).
+
+- **QA status:** read tools are verified against the Invoice4U API reference plus contract tests (120 unit + contract tests green). **Live QA integration is BLOCKED pending credentials** — there is no public Invoice4U sandbox, and exercising `apiqa.invoice4u.co.il` requires a real QA org account + API token. The gated smoke test (`tests/integration/qa.spec.ts`) is skipped without a token; see [`docs/qa-testing.md`](./docs/qa-testing.md).
+- **npm package pending:** publication awaits the trusted-publishing link for `@agente-dev/invoice4u-mcp` on npmjs.com.
 
 ## License
 
