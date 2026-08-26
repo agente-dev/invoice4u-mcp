@@ -39,6 +39,18 @@ export const READ_ANNOTATIONS = {
 } as const;
 
 /**
+ * Annotation set for the write tool register (Train D). The write tool is NOT
+ * read-only, but it is safely idempotent (mandatory apiIdentifier) and not
+ * destructive.
+ */
+export const WRITE_ANNOTATIONS = {
+  readOnlyHint: false,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: true,
+} as const;
+
+/**
  * A tool-level (preflight) failure with one of the client's nine error kinds.
  * Carries optional structured `details` surfaced alongside the standard
  * error shape (e.g. which invoices failed and why).
